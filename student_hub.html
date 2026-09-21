@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Rental Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ============================================================
+   CSS VARIABLES & RESET
+============================================================ */
+:root {
+  --bg: #06080f;
+  --surface: #0c1120;
+  --surface2: #111827;
+  --surface3: #182035;
+  --border: #1e2d4a;
+  --border2: #263652;
+  --accent: #ff6b35;
+  --accent-glow: rgba(255,107,53,0.15);
+  --accent2: #38c8f0;
+  --accent3: #9d7ff4;
+  --accent4: #2ecc8a;
+  --text: #dde6ff;
+  --text-muted: #5d7299;
+  --text-dim: #2e3f60;
+  --success: #2ecc8a;
+  --danger: #f04d4d;
+  --warning: #f59e0b;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 8px 40px rgba(0,0,0,0.6);
+  --shadow-lg: 0 24px 64px rgba(0,0,0,0.7);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+}
+
+/* ============================================================
+   SCROLLBAR
+============================================================ */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;
+transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;
+transform:translateX(-18px)}to{opacity:1;
+transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.85);
+opacity:0}70%{transform:scale(1.03)}100%{transform:scale(1);
+opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(255,107,53,.2)}50%{box-shadow:0 0 40px rgba(255,107,53,.4)}}
+
+/* ============================================================
+   TOAST SYSTEM
+============================================================ */
+#toast-container{
+  position:fixed;
+  top:20px;
+  right:20px;z-index:9999;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+.toast{
+  padding:13px 18px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:500;
+  animation:slideIn .3s ease;
+  box-shadow:var(--shadow);
+  min-width:240px;
+  max-width:320px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  backdrop-filter:blur(20px);
+  pointer-events:auto;
+  font-family:'DM Sans',sans-serif;
+}
+.toast.success{background:rgba(12,40,28,0.96);border:1px solid rgba(46,204,138,.4);color:var(--success);}
+.toast.error{background:rgba(40,12,12,0.96);border:1px solid rgba(240,77,77,.4);color:var(--danger);}
+.toast.info{background:rgba(12,20,40,0.96);border:1px solid rgba(56,200,240,.4);color:var(--accent2);}
+.toast-icon{font-size:16px;flex-shrink:0;}
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.btn{
+  padding:11px 24px;background:var(--accent);border:none;border-radius:var(--radius-sm);
+  color:#fff;font-size:13.5px;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all .2s;letter-spacing:.2px;
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,53,.35);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text);}
+.btn-secondary:hover{background:var(--surface3);box-shadow:0 4px 16px rgba(0,0,0,.3);}
+.btn-danger{background:var(--danger);}
+.btn-danger:hover{box-shadow:0 8px 24px rgba(240,77,77,.35);}
+.btn-sm{padding:8px 16px;font-size:12.5px;}
+.btn-full{width:100%;justify-content:center;}
+.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent);}
+.btn-outline:hover{background:var(--accent-glow);}
+
+/* ============================================================
+   FORM ELEMENTS
+============================================================ */
+.form-group{margin-bottom:15px;}
+.form-group label{
+  display:block;font-size:11px;font-weight:600;color:var(--text-muted);
+  margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace;
+}
+.form-group input,
+.form-group select,
+.form-group textarea{
+  width:100%;padding:11px 15px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:13.5px;font-family:'DM Sans',sans-serif;
+  transition:border .2s,box-shadow .2s,background .2s;outline:none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,53,.1);background:var(--surface3);
+}
+.form-group input::placeholder{color:var(--text-muted);}
+.form-group select option{background:var(--surface2);}
+
+/* ============================================================
+   CARD
+============================================================ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+
+/* ============================================================
+   SPINNER & SKELETON
+============================================================ */
+.spinner{width:24px;height:24px;border:2.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+.loading-block{padding:40px;text-align:center;}
+.skeleton{
+  background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;
+}
+
+/* ============================================================
+   BADGE
+============================================================ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.2px;}
+.badge.green{background:rgba(46,204,138,.1);color:var(--success);border:1px solid rgba(46,204,138,.2);}
+.badge.orange{background:rgba(255,107,53,.1);color:var(--accent);border:1px solid rgba(255,107,53,.2);}
+.badge.red{background:rgba(240,77,77,.1);color:var(--danger);border:1px solid rgba(240,77,77,.2);}
+.badge.blue{background:rgba(56,200,240,.1);color:var(--accent2);border:1px solid rgba(56,200,240,.2);}
+.badge.purple{background:rgba(157,127,244,.1);color:var(--accent3);border:1px solid rgba(157,127,244,.2);}
+
+/* ============================================================
+   LOGIN PAGE
+============================================================ */
+#login-page{
+  position:fixed;inset:0;z-index:500;display:none;
+  align-items:center;justify-content:center;background:#1a1a1a;overflow:hidden;
+}
+#login-page.active{display:flex;}
+
+.login-mesh{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 700px 600px at 15% 20%, rgba(255,107,53,.06) 0%,transparent 70%),
+    radial-gradient(ellipse 500px 500px at 85% 80%, rgba(56,200,240,.05) 0%,transparent 70%),
+    radial-gradient(ellipse 300px 300px at 60% 10%, rgba(157,127,244,.04) 0%,transparent 70%);
+}
+.login-dots{
+  position:absolute;inset:0;
+  background-image:radial-gradient(var(--border) 1px,transparent 1px);
+  background-size:32px 32px;opacity:.4;
+}
+
+.login-card{
+  position:relative;z-index:1;width:100%;max-width:400px;
+  background:rgba(12,17,32,0.9);border:1px solid var(--border2);
+  border-radius:22px;padding:40px 36px;
+  box-shadow:var(--shadow-lg);backdrop-filter:blur(24px);
+  animation:fadeUp .5s ease;
+}
+
+.login-brand{text-align:center;margin-bottom:34px;}
+.login-icon-wrap{
+  width:72px;height:72px;border-radius:20px;margin:0 auto 16px;
+  background:linear-gradient(135deg,rgba(255,107,53,.25),rgba(255,107,53,.05));
+  border:1px solid rgba(255,107,53,.35);
+  display:flex;align-items:center;justify-content:center;font-size:32px;
+  animation:float 3s ease-in-out infinite;
+  box-shadow:0 0 40px rgba(255,107,53,.1);
+}
+.login-brand h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.4px;}
+.login-brand p{color:var(--text-muted);font-size:12.5px;margin-top:4px;}
+
+.role-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.role-card{
+  padding:14px 12px;background:var(--surface2);border:2px solid var(--border);
+  border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.role-card.selected{border-color:var(--accent);background:var(--accent-glow);}
+.role-card .rc-icon{font-size:24px;display:block;margin-bottom:6px;}
+.role-card .rc-label{font-size:12px;font-weight:600;color:var(--text-muted);}
+.role-card.selected .rc-label{color:var(--accent);}
+
+.demo-pill{
+  margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:8px;
+  border:1px solid var(--border);text-align:center;
+}
+.demo-pill p{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.9;}
+
+/* ============================================================
+   APP SHELL
+============================================================ */
+#app{display:none;position:fixed;inset:0;flex-direction:row;}
+#app.active{display:flex;}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+.sidebar{
+  width:252px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;
+  position:fixed;top:0;left:0;z-index:100;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar-logo{
+  padding:20px 18px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.sidebar-logo-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),rgba(255,107,53,.4));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.sidebar-logo-text h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.2px;}
+.sidebar-logo-text p{font-size:11px;color:var(--text-muted);margin-top:1px;}
+
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.nav-section-label{
+  font-size:9.5px;font-weight:700;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:1.2px;
+  padding:14px 10px 6px;font-family:'DM Mono',monospace;
+}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);
+  transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;
+  position:relative;font-family:'DM Sans',sans-serif;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);font-weight:600;}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:55%;background:var(--accent);border-radius:0 3px 3px 0;
+}
+.nav-item.locked{opacity:.35;cursor:not-allowed;}
+.nav-item.locked:hover{background:none;color:var(--text-muted);}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;min-width:20px;text-align:center;
+}
+.nav-lock{margin-left:auto;font-size:10px;opacity:.5;}
+
+.sidebar-footer{padding:14px;border-top:1px solid var(--border);flex-shrink:0;}
+.user-card{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;
+  background:var(--surface2);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);
+}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#fff;font-family:'Syne',sans-serif;
+}
+.user-info p{font-size:13px;font-weight:600;}
+.user-info span{font-size:11px;color:var(--text-muted);}
+.logout-btn{
+  width:100%;padding:10px;background:transparent;border:1px solid var(--border2);
+  border-radius:10px;color:var(--text-muted);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.logout-btn:hover{background:rgba(240,77,77,.1);border-color:rgba(240,77,77,.4);color:var(--danger);}
+
+/* ============================================================
+   MAIN CONTENT
+============================================================ */
+.main-content{margin-left:252px;width:calc(100vw - 252px);height:100vh;overflow:hidden;position:relative;}
+
+/* ============================================================
+   SECTIONS
+============================================================ */
+.section{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:none;overflow-y:auto;padding:28px 30px;
+}
+.section.active{display:block;animation:fadeUp .3s ease;}
+
+.section-header{margin-bottom:22px;}
+.section-header h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.4px;}
+.section-header p{color:var(--text-muted);margin-top:4px;font-size:13px;}
+.section-header-row{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;margin-bottom:22px;
+}
+
+/* ============================================================
+   STATS GRID
+============================================================ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px;margin-bottom:22px;}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 16px;display:flex;align-items:center;gap:14px;
+  transition:border-color .2s,transform .2s;
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-card[onclick]:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px rgba(255,107,53,.2);
+}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.stat-icon.orange{background:rgba(255,107,53,.12);}
+.stat-icon.blue{background:rgba(56,200,240,.12);}
+.stat-icon.purple{background:rgba(157,127,244,.12);}
+.stat-icon.green{background:rgba(46,204,138,.12);}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:500;}
+
+/* ============================================================
+   QUICK ACTIONS
+============================================================ */
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:22px;}
+.qa-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+}
+.qa-card:hover{background:var(--surface2);border-color:var(--accent);transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.4);}
+.qa-card.locked{opacity:.4;cursor:not-allowed;}
+.qa-card.locked:hover{transform:none;border-color:var(--border);box-shadow:none;background:var(--surface);}
+.qa-icon{font-size:28px;}
+.qa-label{font-size:13px;font-weight:600;}
+.qa-desc{font-size:11px;color:var(--text-muted);}
+
+/* Profile required banner */
+.profile-banner{
+  background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.25);
+  border-radius:12px;padding:14px 18px;margin-bottom:20px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.profile-banner p{font-size:13px;color:var(--accent);font-weight:500;flex:1;}
+
+/* ============================================================
+   PROFILE
+============================================================ */
+.profile-hero{
+  display:flex;align-items:center;gap:18px;margin-bottom:20px;flex-wrap:wrap;
+}
+.profile-big-avatar{
+  width:76px;height:76px;border-radius:20px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:#fff;
+}
+.profile-meta h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;margin-bottom:4px;}
+.profile-meta p{font-size:13px;color:var(--text-muted);}
+.profile-status{
+  margin-top:8px;display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;
+}
+.profile-status.complete{background:rgba(46,204,138,.1);color:var(--success);border:1px solid rgba(46,204,138,.2);}
+.profile-status.incomplete{background:rgba(255,107,53,.1);color:var(--accent);border:1px solid rgba(255,107,53,.2);}
+
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ============================================================
+   ITEMS / BROWSE
+============================================================ */
+.search-bar{
+  display:flex;align-items:center;gap:12px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 16px;margin-bottom:14px;
+}
+.search-bar input{flex:1;background:none;border:none;color:var(--text);font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;}
+.search-bar input::placeholder{color:var(--text-muted);}
+
+.items-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-btn{
+  padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;
+}
+.filter-btn.active,.filter-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:16px;}
+.item-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;transition:all .2s;display:flex;flex-direction:column;
+}
+.item-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.6);border-color:var(--border2);}
+.item-img-wrap{width:100%;height:150px;overflow:hidden;background:var(--surface2);position:relative;flex-shrink:0;}
+.item-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;}
+.item-card:hover .item-img-wrap img{transform:scale(1.07);}
+.item-img-emoji{width:100%;height:100%;display:none;align-items:center;justify-content:center;font-size:54px;}
+.item-cat-tag{
+  position:absolute;top:8px;left:8px;background:rgba(6,8,15,0.85);
+  backdrop-filter:blur(8px);border:1px solid var(--border2);
+  color:var(--text-muted);font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:20px;
+}
+.item-body{padding:12px;flex:1;display:flex;flex-direction:column;}
+.item-name{font-size:13px;font-weight:700;margin-bottom:4px;font-family:'Syne',sans-serif;}
+.item-desc{font-size:11px;color:var(--text-muted);margin-bottom:8px;flex:1;line-height:1.45;}
+.item-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;}
+.item-price{font-size:12.5px;font-weight:700;color:var(--accent2);}
+.item-price span{font-size:10px;color:var(--text-muted);font-weight:400;}
+.add-cart-btn{
+  padding:6px 12px;background:var(--accent);border:none;border-radius:8px;
+  color:#fff;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.add-cart-btn:hover{opacity:.85;}
+.add-cart-btn.added{background:var(--success);}
+
+/* ============================================================
+   CART
+============================================================ */
+.cart-empty{
+  text-align:center;padding:60px 20px;color:var(--text-muted);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.cart-empty .ce-icon{font-size:56px;display:block;margin-bottom:14px;opacity:.25;}
+.cart-empty h3{font-size:18px;font-weight:700;margin-bottom:8px;font-family:'Syne',sans-serif;}
+.cart-empty p{font-size:13px;margin-bottom:20px;}
+
+.cart-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.cart-item{
+  display:flex;align-items:center;gap:12px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;
+}
+.cart-item-emoji{font-size:28px;flex-shrink:0;}
+.cart-item-info{flex:1;min-width:0;}
+.cart-item-info h4{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cart-item-info p{font-size:11px;color:var(--text-muted);}
+.cart-item-price{font-size:14px;font-weight:700;color:var(--accent2);white-space:nowrap;flex-shrink:0;font-family:'Syne',sans-serif;}
+.cart-remove{
+  background:none;border:none;color:var(--text-dim);cursor:pointer;
+  font-size:15px;padding:5px;border-radius:7px;transition:all .15s;flex-shrink:0;
+}
+.cart-remove:hover{background:rgba(240,77,77,.1);color:var(--danger);}
+
+.cart-summary{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.cart-summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;color:var(--text-muted);}
+.cart-summary-total{display:flex;justify-content:space-between;align-items:center;padding-top:13px;border-top:1px solid var(--border);margin-top:5px;}
+.cart-summary-total span:first-child{font-size:14px;font-weight:600;}
+.cart-total-amount{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent);}
+
+/* ============================================================
+   DATA TABLES
+============================================================ */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{
+  text-align:left;padding:10px 14px;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);
+  background:var(--surface2);border-bottom:1px solid var(--border);
+  font-family:'DM Mono',monospace;
+}
+.data-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.data-table tr:hover td{background:rgba(255,255,255,.015);}
+.data-table tr:last-child td{border-bottom:none;}
+
+/* ============================================================
+   ADMIN DASHBOARD CHARTS
+============================================================ */
+.admin-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.revenue-chart-wrap{margin-top:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding:10px 0;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.bar{background:linear-gradient(to top,var(--accent),rgba(255,107,53,.4));border-radius:5px 5px 0 0;width:100%;transition:height .5s ease;min-height:4px;}
+.bar-label{font-size:9.5px;color:var(--text-muted);font-family:'DM Mono',monospace;}
+
+/* ============================================================
+   MODAL
+============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);
+}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);border-radius:20px;
+  padding:30px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;
+  animation:pop .3s ease;box-shadow:var(--shadow-lg);
+}
+.modal-header{margin-bottom:4px;}
+.modal-header h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;}
+.modal-subtitle{color:var(--text-muted);font-size:13px;margin-bottom:20px;}
+
+/* Payment methods */
+.payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.pay-method{
+  padding:13px 8px;background:var(--surface2);border:2px solid var(--border);
+  border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.pay-method.selected{border-color:var(--accent);background:var(--accent-glow);}
+.pay-method .pm-icon{font-size:22px;display:block;margin-bottom:5px;}
+.pay-method span{font-size:11px;font-weight:600;color:var(--text-muted);}
+.pay-method.selected span{color:var(--accent);}
+
+/* OTP Box */
+.otp-display-box{
+  background:rgba(56,200,240,.06);border:1px solid rgba(56,200,240,.25);
+  border-radius:12px;padding:16px;text-align:center;margin-bottom:14px;
+}
+.otp-number{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--accent2);letter-spacing:10px;}
+.otp-timer{font-size:12px;color:var(--warning);margin-top:6px;}
+
+/* Success screen */
+.modal-actions{display:flex;gap:12px;}
+.modal-actions .btn{flex:1;}
+.success-screen{text-align:center;padding:8px 0;}
+.success-icon{font-size:64px;animation:pop .5s ease .1s both;display:block;margin-bottom:14px;}
+.success-screen h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.success-screen p{color:var(--text-muted);font-size:13px;}
+.payment-receipt{
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin:16px 0;text-align:left;
+}
+.receipt-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;font-size:12.5px;
+}
+.receipt-row:not(:last-child){border-bottom:1px solid var(--border);}
+.receipt-label{color:var(--text-muted);}
+.receipt-value{font-weight:600;font-family:'DM Mono',monospace;font-size:12px;}
+
+/* Rating stars */
+.stars-row{display:flex;gap:8px;justify-content:center;margin:14px 0;}
+.star{font-size:30px;cursor:pointer;opacity:.2;transition:opacity .15s,transform .15s;}
+.star.lit,.star:hover{opacity:1;transform:scale(1.1);}
+.review-box{
+  width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-size:13px;resize:vertical;min-height:72px;
+  font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;
+}
+.review-box:focus{border-color:var(--accent);}
+
+/* Alert banner */
+.alert-banner{
+  background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;
+}
+.alert-banner p{font-size:13px;color:var(--warning);font-weight:500;}
+
+/* ============================================================
+   MOBILE
+============================================================ */
+.hamburger{
+  display:none;position:fixed;top:13px;left:13px;z-index:201;
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  padding:9px 11px;cursor:pointer;font-size:18px;color:var(--text);box-shadow:var(--shadow);
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);}
+.sidebar-overlay.visible{display:block;}
+
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0;width:100vw;}
+  .hamburger{display:flex;}
+  .section{padding:18px 16px;padding-top:56px;}
+  .admin-grid-2{grid-template-columns:1fr;}
+}
+@media(max-width:500px){
+  .items-grid{grid-template-columns:1fr 1fr;}
+  .profile-grid{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:360px){
+  .items-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- ===================================================
+     LOGIN PAGE
+=================================================== -->
+<div id="login-page" class="active">
+  <div class="login-mesh"></div>
+  <div class="login-dots"></div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-icon-wrap">🎓</div>
+      <h1>Student Rental Hub</h1>
+      <p>Rent smart. Study harder.</p>
+    </div>
+
+    <div class="form-group" style="margin-bottom:6px">
+      <label>Sign in as</label>
+      <div class="role-selector">
+        <div class="role-card selected" id="role-student" onclick="selectRole('student')">
+          <span class="rc-icon">🎒</span>
+          <span class="rc-label">Student</span>
+        </div>
+        <div class="role-card" id="role-admin" onclick="selectRole('admin')">
+          <span class="rc-icon">🛡️</span>
+          <span class="rc-label">Admin</span>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="login-role" value="student"/>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter your username" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password"/>
+    </div>
+    <button class="btn btn-full" id="login-btn" onclick="doLogin()">Sign In →</button>
+  </div>
+</div>
+
+<!-- ===================================================
+     APP SHELL
+=================================================== -->
+<div id="app">
+  <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-logo-text">
+        <h2>Rental Hub</h2>
+        <p id="sidebar-role-label">Student Portal</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <p id="user-display-name">User</p>
+          <span id="user-display-role">—</span>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- STUDENT: HOME -->
+    <div class="section" id="sec-home">
+      <div class="section-header">
+        <h2 id="home-greeting">Welcome back 👋</h2>
+        <p>Here's your activity at a glance.</p>
+      </div>
+      <div id="profile-banner" style="display:none" class="profile-banner">
+        <span style="font-size:20px">⚠️</span>
+        <p>Complete your profile before you can browse or rent items.</p>
+        <button class="btn btn-sm" onclick="showSection('sec-profile')">Complete Profile →</button>
+      </div>
+      <div class="section-header" style="margin-bottom:12px"><h2 style="font-size:16px;font-family:'Syne',sans-serif">Quick Actions</h2></div>
+      <div class="quick-actions" id="quick-actions-grid"></div>
+    </div>
+
+    <!-- STUDENT: PROFILE -->
+    <div class="section" id="sec-profile">
+      <div class="section-header-row">
+        <div class="section-header" style="margin-bottom:0">
+          <h2>My Profile</h2>
+          <p>Complete your profile to unlock all features.</p>
+        </div>
+        <button class="btn btn-sm" onclick="saveProfile()">Save Changes ✓</button>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="profile-hero">
+          <div class="profile-big-avatar" id="profile-big-avatar">?</div>
+          <div class="profile-meta">
+            <h3 id="profile-display-name">Your Name</h3>
+            <p id="profile-display-college">College · Year</p>
+            <div class="profile-status incomplete" id="profile-status-badge">⚠️ Incomplete</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="profile-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="p-name" placeholder="John Doe"/>
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="p-age" placeholder="20" min="16" max="35"/>
+          </div>
+          <div class="form-group">
+            <label>College Name</label>
+            <input type="text" id="p-college" placeholder="MIT Manipal"/>
+          </div>
+          <div class="form-group">
+            <label>Year / Class</label>
+            <input type="text" id="p-year" placeholder="3rd Year B.Tech"/>
+          </div>
+          <!-- REPLACE WITH: -->
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Address</label>
+            <input type="text" id="p-address" placeholder="Room 101, Boys Hostel, Mangaluru"/>
+          </div>
+		  <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" id="p-mobile" placeholder="10-digit mobile number" maxlength="10"/>
+          </div>
+          <div class="form-group">
+            <label>Aadhaar Card Number</label>
+            <input type="text" id="p-aadhaar-num" placeholder="12-digit Aadhaar number" maxlength="12"/>
+          </div>
+          <div class="form-group">
+            <label>Aadhaar Card Upload (Image/PDF)</label>
+            <input type="file" id="p-aadhaar-file" accept="image/*,.pdf"
+              style="padding:8px;cursor:pointer;"/>
+            <p id="p-aadhaar-status" style="font-size:11px;color:var(--text-muted);margin-top:4px"></p>
+          </div>
+          <div class="form-group">
+            <label>College ID Number</label>
+            <input type="text" id="p-college-id-num" placeholder="College ID number"/>
+          </div>
+          <div class="form-group">
+            <label>College ID Upload (Image/PDF)</label>
+            <input type="file" id="p-college-id-file" accept="image/*,.pdf"
+              style="padding:8px;cursor:pointer;"/>
+            <p id="p-college-id-status" style="font-size:11px;color:var(--text-muted);margin-top:4px"></p>
+          </div>
+        </div>
+        <button class="btn" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+	  </div>
+    <!-- STUDENT: ITEMS -->
+    <div class="section" id="sec-items">
+      <div class="section-header">
+        <h2>Browse Items</h2>
+        <p>Find and rent what you need.</p>
+      </div>
+      <div class="search-bar">
+        <span style="font-size:16px;color:var(--text-muted)">🔍</span>
+        <input type="text" id="item-search" placeholder="Search items…" oninput="searchItems(this.value)"/>
+      </div>
+      <div class="items-filter">
+        <button class="filter-btn active" onclick="filterItems('all',this)">All</button>
+        <button class="filter-btn" onclick="filterItems('Textbooks',this)">📚 Textbooks</button>
+        <button class="filter-btn" onclick="filterItems('Electronics',this)">💻 Electronics</button>
+        <button class="filter-btn" onclick="filterItems('Vehicles',this)">🛵 Vehicles</button>
+        <button class="filter-btn" onclick="filterItems('Appliances',this)">🏠 Appliances</button>
+        <button class="filter-btn" onclick="filterItems('Cameras',this)">📷 Cameras</button>
+      </div>
+      <div class="items-grid" id="items-grid"></div>
+    </div>
+
+    <!-- STUDENT: CART -->
+    <div class="section" id="sec-cart">
+      <div class="section-header">
+        <h2>My Cart 🛒</h2>
+        <p>Review items before renting.</p>
+      </div>
+      <div id="cart-content"></div>
+    </div>
+
+    <!-- STUDENT: MY RENTALS -->
+    <div class="section" id="sec-my-rentals">
+      <div class="section-header">
+        <h2>My Rentals</h2>
+        <p>Track your active and past rentals.</p>
+      </div>
+      <div class="card">
+        <div id="my-rentals-content"><div class="loading-block"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: DASHBOARD -->
+    <div class="section" id="sec-admin-dash">
+      <div class="section-header">
+        <h2>Admin Dashboard 📊</h2>
+        <p>Platform-wide analytics and overview.</p>
+      </div>
+      <!-- REPLACE WITH: -->
+<div class="stats-grid">
+  <div class="stat-card" onclick="navTo('sec-activity');loadActivity()" style="cursor:pointer">
+    <div class="stat-icon blue">👥</div><div><div class="stat-val" id="a-students">—</div><div class="stat-label">Total Students</div></div>
+  </div>
+  <div class="stat-card" onclick="navTo('sec-tracking');loadTracking()" style="cursor:pointer">
+    <div class="stat-icon orange">📦</div><div><div class="stat-val" id="a-rentals">—</div><div class="stat-label">Total Rentals</div></div>
+  </div>
+  <div class="stat-card" onclick="navTo('sec-tracking');loadTracking()" style="cursor:pointer">
+    <div class="stat-icon green">💰</div><div><div class="stat-val" id="a-revenue">—</div><div class="stat-label">Revenue</div></div>
+  </div>
+  <div class="stat-card" onclick="navTo('sec-admin-ratings');loadAdminRatings()" style="cursor:pointer">
+    <div class="stat-icon purple">⭐</div><div><div class="stat-val" id="a-ratings">—</div><div class="stat-label">Ratings</div></div>
+  </div>
+</div>
+      <div class="admin-grid-2">
+        <div class="card">
+          <p style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;font-family:'DM Mono',monospace">RECENT ACTIVITY</p>
+          <div id="dash-activity-preview"><div class="loading-block"><div class="spinner"></div></div></div>
+        </div>
+        <div class="card">
+          <p style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;font-family:'DM Mono',monospace">DUE SOON ALERTS</p>
+          <div id="dash-due-preview"><div class="loading-block"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: ACTIVITY LOG -->
+    <div class="section" id="sec-activity">
+      <div class="section-header"><h2>Activity Log</h2><p>Complete audit trail of all student actions.</p></div>
+      <div class="card"><div id="activity-content"><div class="loading-block"><div class="spinner"></div></div></div></div>
+    </div>
+
+    <!-- ADMIN: RENT TRACKING -->
+    <div class="section" id="sec-tracking">
+      <div class="section-header"><h2>Rent Tracking</h2><p>Monitor all rentals. Items due within 2 days are flagged.</p></div>
+      <div id="tracking-reminders"></div>
+      <div class="card"><div id="tracking-content"><div class="loading-block"><div class="spinner"></div></div></div></div>
+    </div>
+
+    <!-- ADMIN: RATINGS -->
+    <div class="section" id="sec-admin-ratings">
+      <div class="section-header"><h2>Ratings & Reviews</h2><p>Student feedback on rental experience.</p></div>
+      <div class="card"><div id="ratings-content"><div class="loading-block"><div class="spinner"></div></div></div></div>
+    </div>
+    <!-- ADMIN: DOCUMENTS -->
+<div class="section" id="sec-admin-docs">
+  <div class="section-header">
+    <h2>Student Documents 📁</h2>
+    <p>View uploaded Aadhaar and College ID documents.</p>
+  </div>
+  <div class="card">
+    <div id="docs-content">
+      <div class="loading-block"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+  </main>
+</div>
+
+<!-- RENT MODAL -->
+<div id="rent-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <!-- STEP 1: PAYMENT DETAILS -->
+    <div id="rent-step-1">
+      <div class="modal-header"><h3>🚀 Confirm Rental</h3></div>
+      <p class="modal-subtitle">Fill in details and choose a payment method.</p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="rent-name" placeholder="Your full name"/>
+      </div>
+      <div class="form-group">
+        <label>Delivery Address</label>
+        <input type="text" id="rent-address" placeholder="Hostel / Home address"/>
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <div class="payment-methods">
+          <div class="pay-method selected" data-m="UPI" onclick="selectPayMethod(this)">
+            <span class="pm-icon">📱</span><span>UPI</span>
+          </div>
+          <div class="pay-method" data-m="QR" onclick="selectPayMethod(this)">
+            <span class="pm-icon">📷</span><span>QR Scan</span>
+          </div>
+          <div class="pay-method" data-m="NetBanking" onclick="selectPayMethod(this)">
+            <span class="pm-icon">🏦</span><span>Net Banking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI -->
+      <div id="upi-field" class="form-group">
+        <label>UPI ID</label>
+        <input type="text" id="upi-id" placeholder="yourname@upi"/>
+      </div>
+
+      <!-- QR -->
+      <div id="qr-field" class="form-group" style="display:none;text-align:center">
+        <label>Scan QR Code</label>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=StudentRentalHubPayment"
+             style="width:180px;height:180px;border-radius:12px;border:1px solid var(--border);padding:8px;background:white;margin:8px 0"/>
+        <p style="font-size:12px;color:var(--text-muted)">Scan using PhonePe / GPay / Paytm</p>
+      </div>
+
+      <!-- NET BANKING STEP 1: Credentials -->
+      <div id="netbank-field" class="form-group" style="display:none">
+        <div id="netbank-creds-step">
+          <label>Select Bank</label>
+          <select id="bank-name" style="margin-bottom:12px">
+            <option value="">Choose Bank</option>
+            <option>SBI</option><option>HDFC Bank</option>
+            <option>ICICI Bank</option><option>Axis Bank</option><option>Canara Bank</option>
+          </select>
+          <div class="form-group">
+            <label>Net Banking User ID</label>
+            <input type="text" id="netbank-user" placeholder="Customer ID / User ID"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Password</label>
+            <input type="password" id="netbank-pass" placeholder="Net banking password"/>
+          </div>
+        </div>
+
+        <!-- NET BANKING STEP 2: OTP -->
+        <div id="netbank-otp-step" style="display:none">
+          <div class="otp-display-box">
+            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;font-family:'DM Mono',monospace">YOUR OTP (for demo)</p>
+            <div class="otp-number" id="otp-display">——</div>
+            <div class="otp-timer" id="otp-timer">⏱ 2:00 remaining</div>
+            <button id="resend-otp-btn" onclick="resendOTP()" style="display:none;margin-top:8px;padding:6px 16px;background:none;border:1px solid var(--accent2);border-radius:8px;color:var(--accent2);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">🔄 Resend OTP</button>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Enter OTP</label>
+            <input type="text" id="netbank-otp" placeholder="6-digit OTP" maxlength="6"
+                   style="letter-spacing:6px;font-family:'DM Mono',monospace;font-size:18px;text-align:center"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeRentModal()">Cancel</button>
+        <button class="btn" onclick="processPayment()" id="pay-btn">Pay Now 💳</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: SUCCESS -->
+    <div id="rent-step-2" style="display:none">
+      <div class="success-screen">
+        <span class="success-icon">✅</span>
+        <h3>Payment Successful!</h3>
+        <p>Your rental is confirmed. Items will be delivered or ready for pickup.</p>
+        <div class="payment-receipt" id="payment-summary"></div>
+        <h4 style="font-size:14px;margin-bottom:4px">Rate your experience</h4>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px">How was the rental process?</p>
+        <div class="stars-row" id="rating-stars">
+          <span class="star" onclick="setStar(1)">⭐</span>
+          <span class="star" onclick="setStar(2)">⭐</span>
+          <span class="star" onclick="setStar(3)">⭐</span>
+          <span class="star" onclick="setStar(4)">⭐</span>
+          <span class="star" onclick="setStar(5)">⭐</span>
+        </div>
+        <textarea class="review-box" id="review-text" placeholder="Write a review (optional)…"></textarea>
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button class="btn btn-secondary" style="flex:1" onclick="closeRentModal()">Skip</button>
+          <button class="btn" style="flex:2" onclick="submitRating()">Submit Rating ⭐</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+============================================================ */
+let currentUser   = null;
+let cart          = [];
+let profileSaved=false;
+let currentFilter = 'all';
+let searchQuery   = '';
+let selectedPayMethod = 'UPI';
+let selectedRating    = 0;
+let lastRentalId      = null;
+let paymentStep       = 1;
+let generatedOTP      = '';
+let otpTimerInterval  = null;
+
+const API = 'backend.php';
+
+/* ============================================================
+   ITEM CATALOG
+============================================================ */
+const ITEMS = [
+  {id:1, category:'Textbooks',   emoji:'📗', name:'Engineering Mathematics',      desc:'Covers calculus, linear algebra, differential equations.',price:500,  unit:'week', img:'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80'},
+  {id:2, category:'Textbooks',   emoji:'📘', name:'Data Structures (DS)',          desc:'Trees, graphs, sorting algorithms & complexity.',         price:540,  unit:'week', img:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&q=80'},
+  {id:3, category:'Textbooks',   emoji:'📙', name:'Computer Networks',             desc:'OSI model, TCP/IP, routing, and security.',               price:500,  unit:'week', img:'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&q=80'},
+  {id:4, category:'Textbooks',   emoji:'📕', name:'VLSI Design Book',              desc:'CMOS circuits, layout techniques, simulation.',           price:800,  unit:'week', img:'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&q=80'},
+  {id:5, category:'Electronics', emoji:'💻', name:'Apple MacBook Air M2',          desc:'8GB RAM, 256GB SSD, 18hr battery.',                       price:5000, unit:'week', img:'https://images.unsplash.com/photo-1569770218135-bea267ed7e84?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8QXBwbGUlMjBNYWNCb29rJTIwQWlyJTIwTTJ8ZW58MHx8MHx8fDA%3D'},
+  {id:6, category:'Electronics', emoji:'💻', name:'Dell Inspiron 15 Laptop',       desc:'Intel i7, 16GB RAM, 512GB SSD. Ideal for coding.',        price:3800, unit:'week', img:'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8RGVsbCUyMEluc3Bpcm9uJTIwMTUlMjBMYXB0b3B8ZW58MHx8MHx8fDA%3D'},
+  {id:7, category:'Electronics', emoji:'💻', name:'HP Pavilion Laptop',            desc:'HP Pavilion x360 — i5, 8GB RAM, touchscreen.',           price:1500, unit:'week', img:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80'},
+  {id:8, category:'Electronics', emoji:'💻', name:'Lenovo ThinkPad E14',           desc:'AMD Ryzen 5, MIL-SPEC durability.',                       price:1600, unit:'week', img:'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400&q=80'},
+  {id:9, category:'Electronics', emoji:'💻', name:'ASUS ROG Gaming Laptop',        desc:'RTX 3060, 144Hz display, perfect for gaming.',            price:2500, unit:'week', img:'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&q=80'},
+  {id:10,category:'Electronics', emoji:'🖥️', name:'Dell Desktop PC (Core i7)',     desc:'Core i7, 16GB RAM, 1TB HDD.',                            price:4200, unit:'week', img:'https://images.unsplash.com/photo-1567521463850-4939134bcd4a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fERlbGwlMjBEZXNrdG9wJTIwUEMlMjAoQ29yZSUyMGk3KXxlbnwwfHwwfHx8MA%3D%3D'},
+  {id:11,category:'Electronics', emoji:'📱', name:'Samsung Galaxy A54',            desc:'5G, 6GB RAM, great camera.',                             price:5200,  unit:'week', img:'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&q=80'},
+  {id:12,category:'Electronics', emoji:'📽️', name:'Epson Mini Projector',          desc:'3300 lumens, HDMI/USB.',                                  price:1200, unit:'week', img:'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&q=80'},
+  {id:13,category:'Electronics', emoji:'🖨️', name:'HP LaserJet Printer',           desc:'Wireless, 20ppm. Perfect for lab reports.',              price:1550,  unit:'week', img:'https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400&q=80'},
+  {id:14,category:'Electronics', emoji:'🎧', name:'Sony WH-1000XM5',               desc:'Industry-leading ANC, 30hr battery.',                    price:3450,  unit:'week', img:'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=400&q=80'},
+  {id:15,category:'Electronics', emoji:'🎧', name:'Bose QuietComfort 45',           desc:'Premium noise-cancellation, ultra-soft earcups.',        price:1320,  unit:'week', img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80'},
+  {id:16,category:'Electronics', emoji:'🎧', name:'JBL Tune 760NC',                desc:'Adaptive ANC, 35hr playback, foldable.',                 price:2453,  unit:'week', img:'https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=400&q=80'},
+  {id:17,category:'Vehicles',    emoji:'🛵', name:'Honda Activa 6G',               desc:'Fuel-injected engine, silent start, city-ready.',         price:2700,  unit:'day',  img:'https://images.unsplash.com/photo-1748344640495-e22fe65fc932?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8SG9uZGElMjBBY3RpdmElMjA2R3xlbnwwfHwwfHx8MA%3D%3D'},
+  {id:18,category:'Vehicles',    emoji:'🛵', name:'Honda DX',           desc:'Smooth ride, good mileage.',                             price:1250,  unit:'day',  img:'https://media.istockphoto.com/id/1555233564/photo/blue-honda-grazia-125cc-scooter-or-motorcycle-with-stand-parked-on-the-road-in-the-tropics.jpg?s=1024x1024&w=is&k=20&c=jm30Q99sieYdGl4yD-xIebZpIbi-330Xpf4y7Vd7x2I='},
+  {id:19,category:'Vehicles',    emoji:'🏍️', name:'Royal Enfield Bullet 350',      desc:'Iconic bike, powerful engine.',                          price:1200, unit:'day',  img:'https://images.unsplash.com/photo-1655179552613-4532b003cd50?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Um95YWwlMjBFbmZpZWxkJTIwQnVsbGV0JTIwMzUwfGVufDB8fDB8fHww'},
+  {id:20,category:'Vehicles',    emoji:'🚲', name:'YAMAHA FZ',           desc:'25km/h, 50km range, zero emission.',                     price:2500,  unit:'day',  img:'https://images.unsplash.com/photo-1759906426666-2fa1091486de?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZnolMjBiaWtlfGVufDB8fDB8fHww'},
+  {id:21,category:'Cameras',     emoji:'📸', name:'Canon EOS 1500D DSLR',          desc:'24.1MP, 18-55mm lens, ideal for events.',                price:900,  unit:'day',  img:'https://images.unsplash.com/photo-1619401952369-c5bdeb8f0185?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Q2Fub24lMjBFT1MlMjAxNTAwRCUyMERTTFJ8ZW58MHx8MHx8fDA%3D'},
+  {id:22,category:'Cameras',     emoji:'📸', name:'Nikon D3500 DSLR',              desc:'24.2MP, beginner-friendly.',                             price:1850,  unit:'day',  img:'https://images.unsplash.com/photo-1519638831568-d9897f54ed69?w=400&q=80'},
+  {id:23,category:'Cameras',     emoji:'📹', name:'Sony Alpha a6400',              desc:'24.2MP, real-time eye AF, 4K video.',                    price:1100, unit:'day',  img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80'},
+  {id:24,category:'Cameras',     emoji:'🎥', name:'Sony camera',           desc:'5.3K video, waterproof, HyperSmooth.',                   price:2100,  unit:'day',  img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FtZXJhJTIwbGVuc3xlbnwwfHwwfHx8MA%3D%3D'},
+  {id:25,category:'Appliances',  emoji:'🍕', name:'Black Toaster Oven',         desc:'oven, auto-cook menus.',                   price:2500, unit:'week', img:'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8b3ZlbnxlbnwwfHwwfHx8MA%3D%3D'},
+  {id:26,category:'Appliances',  emoji:'🫕', name:'Samsung Convection Oven',       desc:'28L convection + grill.',                               price:2000, unit:'week', img:'https://images.unsplash.com/photo-1690731849383-514935755156?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWljcm93YXZlJTIwb3ZlbnxlbnwwfHwwfHx8MA%3D%3D'},
+  {id:27,category:'Appliances',  emoji:'👔', name:'Philips Hair Dry ',              desc:'1900W, non-stick soleplate.',                            price:1000,   unit:'week', img:'https://media.istockphoto.com/id/949346138/photo/black-electrical-hairdryer.jpg?s=2048x2048&w=is&k=20&c=sT5dybp2dWNvJBv4L0TRase5-Oa4o7V0SZt7LxInPH4='},
+  {id:28,category:'Appliances',  emoji:'👕', name:'Trimmer ',              desc:'1250W steam iron, anti-calc system.',                    price:1500,  unit:'week', img:'https://images.unsplash.com/photo-1508380702597-707c1b00695c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8UGhpbGlwcyUyMEhhaXIlMjBEcnl8ZW58MHx8MHx8fDA%3D'},
+  {id:29,category:'Appliances',  emoji:'🔊', name:'JBL Charge 5 Speaker',         desc:'40W, IP67 waterproof, 20hr playtime.',                   price:900,  unit:'week', img:'https://images.unsplash.com/photo-1632073383420-01461da1e082?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8SkJMJTIwQ2hhcmdlJTIwNSUyMFNwZWFrZXJ8ZW58MHx8MHx8fDA%3D'},
+  {id:30,category:'Appliances',  emoji:'🔊', name:'Bose SoundLink Flex',           desc:'360° sound, waterproof, rich bass.',                     price:950,  unit:'week', img:'https://images.unsplash.com/photo-1567593179124-7835e19fe1e2?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Qm9zZSUyMFNvdW5kTGluayUyMEZsZXh8ZW58MHx8MHx8fDA%3D'},
+  {id:31,category:'Appliances',  emoji:'💇', name:'Dyson Supersonic Hair Straight',   desc:'Intelligent heat control, 1600W.',                       price:1000, unit:'week', img:'https://images.unsplash.com/photo-1712641967071-b011e33a70f4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8SGFpciUyMHN0cmFpZ2h0bmVyfGVufDB8fDB8fHww'},
+  {id:32,category:'Appliances',  emoji:'🌀', name:'Havells Table Fan',             desc:'400mm, 3-speed, whisper-quiet motor.',                   price:1000,  unit:'week', img:'https://images.unsplash.com/photo-1665298455913-dd43714f5ad1?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8SGF2ZWxscyUyMFRhYmxlJTIwRmFufGVufDB8fDB8fHww'},
+  {id:33,category:'Appliances',  emoji:'☕', name:'Water heater Ketel',           desc:'15-bar pressure, hot & cold drinks.',                    price:1250, unit:'week', img:'https://images.unsplash.com/photo-1603437077199-463272de17c6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHdhdGVyJTIwaGVhdGVyJTIwa2V0ZWx8ZW58MHx8MHx8fDA%3D'},
+  {id:34,category:'Appliances',  emoji:'🌬️', name:'Iron box', desc:'HEPA+carbon filter, 360° purification.',                 price:1420,  unit:'week', img:'https://images.unsplash.com/photo-1489274495757-95c7c837b101?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2xvdGglMjBpcm9uaW5nJTIwYm94fGVufDB8fDB8fHww'},
+];
+
+
+/* ============================================================
+   UTILITIES
+============================================================ */
+function toast(msg, type='info') {
+  const icons = {success:'✅', error:'❌', info:'ℹ️'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.style.opacity='0', 3000);
+  setTimeout(() => t.remove(), 3400);
+}
+
+function api(action, data={}) {
+  const params = new URLSearchParams({action, ...data});
+  // Flatten nested objects (like items array)
+  Object.entries(data).forEach(([key, val]) => {
+    if (typeof val === 'object') {
+      params.delete(key);
+      params.set(key, JSON.stringify(val));
+    }
+  });
+
+  return fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body: params.toString()
+  })
+  .then(r => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .catch(err => { console.error('[API Error]', action, err); return {success:false, message:'Network/server error'}; });
+}
+
+function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+
+/* ============================================================
+   LOGIN / LOGOUT
+============================================================ */
+let selectedRole = 'student';
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('login-role').value = role;
+  document.getElementById('role-student').classList.toggle('selected', role === 'student');
+  document.getElementById('role-admin').classList.toggle('selected', role === 'admin');
+}
+
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const r = selectedRole;
+
+  if (!u || !p) { toast('Please fill all fields','error'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+
+  const res = await api('login', {username:u, password:p, role:r});
+
+  if (res.success) {
+    currentUser = res.user;
+    currentUser.profile_completed = !!res.profile_completed;
+    enterApp();
+  } else {
+    toast(res.message || 'Invalid credentials','error');
+  }
+
+  btn.disabled = false; btn.textContent = 'Sign In →';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-page').classList.contains('active')) doLogin();
+});
+
+function doLogout() {
+  api('logout');
+  currentUser  = null;
+  cart         = [];
+  profileSaved = false;  // ADD THIS LINE
+  clearOTPTimer();
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Reset UI
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-page').classList.add('active');
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-user').value = '';
+  document.getElementById('sidebar-nav').innerHTML = '';
+  document.getElementById('p-aadhaar-file').value   = '';
+document.getElementById('p-college-id-file').value = '';
+}
+
+/* ============================================================
+   APP ENTRY
+============================================================ */
+function enterApp() {
+  document.getElementById('login-page').classList.remove('active');
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  app.classList.add('active');
+
+  const initial = (currentUser.username[0] || 'U').toUpperCase();
+  document.getElementById('user-avatar').textContent = initial;
+  document.getElementById('user-display-name').textContent = currentUser.username;
+  document.getElementById('user-display-role').textContent = currentUser.role === 'admin' ? '🛡️ Admin' : '🎒 Student';
+  document.getElementById('sidebar-role-label').textContent = currentUser.role === 'admin' ? 'Admin Panel' : 'Student Portal';
+
+  // Reset profile display fully
+document.getElementById('p-name').value    = '';
+document.getElementById('p-age').value     = '';
+document.getElementById('p-college').value = '';
+document.getElementById('p-year').value    = '';
+document.getElementById('p-address').value = '';
+document.getElementById('p-aadhaar-num').value     = '';
+document.getElementById('p-college-id-num').value  = '';
+document.getElementById('p-aadhaar-status').textContent   = '';
+document.getElementById('p-college-id-status').textContent = '';
+document.getElementById('p-aadhaar-file').value   = '';
+document.getElementById('p-college-id-file').value = '';
+
+// Reset profile hero display
+document.getElementById('profile-display-name').textContent    = 'Your Name';
+document.getElementById('profile-display-college').textContent = 'College · Year';
+document.getElementById('profile-big-avatar').textContent      = '?';
+document.getElementById('profile-status-badge').className      = 'profile-status incomplete';
+document.getElementById('profile-status-badge').textContent    = '⚠️ Incomplete';
+  buildNav();
+
+// REPLACE WITH (add else):
+  if (currentUser.role === 'admin') {
+    showSection('sec-admin-dash');
+    loadAdminDash();
+  } else {
+    showSection('sec-profile');
+    toast('Welcome! Please save your profile to continue 👤','info');
+  }
+  }
+/* ============================================================
+   NAVIGATION
+============================================================ */
+const STUDENT_NAV = [
+  {label:'Home',         icon:'🏠', section:'sec-home',        load:()=>loadStudentHome()},
+  {label:'My Profile',   icon:'👤', section:'sec-profile',     load:()=>{}},
+  {label:'Browse Items', icon:'📦', section:'sec-items',       load:()=>renderItems(currentFilter), protected:true},
+  {label:'My Cart',      icon:'🛒', section:'sec-cart',        load:()=>renderCart(), protected:true, badge:'cart'},
+  {label:'My Rentals',   icon:'📋', section:'sec-my-rentals',  load:()=>loadMyRentals(), protected:true},
+];
+const ADMIN_NAV = [
+  {label:'Dashboard',     icon:'📊', section:'sec-admin-dash',    load:()=>loadAdminDash()},
+  {label:'Activity Log',  icon:'📝', section:'sec-activity',      load:()=>loadActivity()},
+  {label:'Rent Tracking', icon:'🔍', section:'sec-tracking',      load:()=>loadTracking()},
+  {label:'Ratings',       icon:'⭐', section:'sec-admin-ratings', load:()=>loadAdminRatings()},
+  {label:'Documents',     icon:'📁', section:'sec-admin-docs',    load:()=>loadStudentDocs()},
+];
+
+function buildNav() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  const items = currentUser.role === 'admin' ? ADMIN_NAV : STUDENT_NAV;
+
+  const label = document.createElement('div');
+  label.className = 'nav-section-label';
+  label.textContent = currentUser.role === 'admin' ? 'Admin Menu' : 'Navigation';
+  nav.appendChild(label);
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-item';
+    btn.dataset.section = item.section;
+    // REPLACE WITH:
+    const locked = item.protected && !profileSaved;
+    if (locked) btn.classList.add('locked');
+
+    let inner = `<span class="nav-icon">${item.icon}</span>${item.label}`;
+    if (item.badge === 'cart') {
+      inner += `<span class="nav-badge" id="nav-cart-badge" style="display:${cart.length?'inline':'none'}">${cart.length}</span>`;
+    }
+    if (locked) inner += `<span class="nav-lock">🔒</span>`;
+    btn.innerHTML = inner;
+
+    btn.onclick = () => {
+      if (locked) { toast('Complete your profile first 👤','error'); showSection('sec-profile'); closeSidebar(); return; }
+      item.load();
+      showSection(item.section);
+      closeSidebar();
+    };
+    nav.appendChild(btn);
+  });
+
+  renderQuickActions();
+}
+
+function renderQuickActions() {
+  const grid = document.getElementById('quick-actions-grid');
+  if (!grid) return;
+  const pc = currentUser && profileSaved;
+  grid.innerHTML = `
+    <div class="qa-card ${pc?'':'locked'}" onclick="${pc?"navTo('sec-items')":"showSection('sec-profile')"}">
+      <span class="qa-icon">📦</span>
+      <span class="qa-label">Browse Items</span>
+      <span class="qa-desc">${pc?'Find things to rent':'Complete profile first'}</span>
+    </div>
+    <div class="qa-card ${pc?'':'locked'}" onclick="${pc?"navTo('sec-cart');renderCart()":"showSection('sec-profile')"}">
+      <span class="qa-icon">🛒</span>
+      <span class="qa-label">My Cart</span>
+      <span class="qa-desc" id="qa-cart-count">${cart.length} item${cart.length!==1?'s':''}</span>
+    </div>
+    <div class="qa-card ${pc?'':'locked'}" onclick="${pc?"navTo('sec-my-rentals');loadMyRentals()":"showSection('sec-profile')"}">
+      <span class="qa-icon">📋</span>
+      <span class="qa-label">My Rentals</span>
+      <span class="qa-desc">${pc?'View history':'Complete profile first'}</span>
+    </div>
+    <div class="qa-card" onclick="navTo('sec-profile')">
+      <span class="qa-icon">👤</span>
+      <span class="qa-label">My Profile</span>
+      <span class="qa-desc">${pc?'Update your info':'⚠️ Required'}</span>
+    </div>
+  `;
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => { s.classList.remove('active'); s.scrollTop = 0; });
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); el.scrollTop = 0; }
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === id));
+}
+
+function navTo(sectionId) {
+  if (!profileSaved && ['sec-items','sec-cart','sec-my-rentals'].includes(sectionId)) {
+    toast('Please save your profile first 👤','error');
+    showSection('sec-profile');
+    return;
+  }
+  const items = currentUser.role === 'admin' ? ADMIN_NAV : STUDENT_NAV;
+  const item = items.find(i => i.section === sectionId);
+  if (item) { item.load(); showSection(sectionId); }
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById('nav-cart-badge');
+  if (badge) { badge.textContent = cart.length; badge.style.display = cart.length ? 'inline' : 'none'; }
+  const qa = document.getElementById('qa-cart-count');
+  if (qa) qa.textContent = cart.length + ' item' + (cart.length !== 1 ? 's' : '');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('visible');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+}
+
+/* ============================================================
+   STUDENT HOME
+============================================================ */
+async function loadStudentHome() {
+  const banner = document.getElementById('profile-banner');
+if (banner) banner.style.display = profileSaved ? 'none' : 'flex';
+
+  const greeting = document.getElementById('home-greeting');
+  if (greeting) {
+    const name = document.getElementById('p-name').value || currentUser.username;
+    greeting.textContent = `Welcome back, ${name} 👋`;
+  }
+
+  const res = await api('studentStats');
+  if (res.success) {
+    
+  }
+  updateCartBadge();
+}
+
+/* ============================================================
+   PROFILE
+============================================================ */
+// REPLACE WITH:
+async function loadProfile() {
+  const res = await api('getProfile');
+  if (res.success && res.profile) {
+    const p = res.profile;
+    document.getElementById('p-name').value     = p.full_name  || '';
+    document.getElementById('p-age').value      = p.age        || '';
+    document.getElementById('p-college').value  = p.college    || '';
+    document.getElementById('p-year').value     = p.year_class || '';
+    document.getElementById('p-address').value  = p.address    || '';
+    document.getElementById('p-aadhaar-num').value    = p.aadhaar_number    || '';
+    document.getElementById('p-college-id-num').value = p.college_id_number || '';
+
+    // Show upload status
+    const aStatus  = document.getElementById('p-aadhaar-status');
+    const cStatus  = document.getElementById('p-college-id-status');
+    if (aStatus)  aStatus.textContent  = p.aadhaar_file   ? '✅ Aadhaar uploaded'   : '⚠️ Not uploaded';
+    if (cStatus)  cStatus.textContent  = p.college_id_file ? '✅ College ID uploaded' : '⚠️ Not uploaded';
+
+    updateProfileDisplay(p);
+  }
+}
+
+function updateProfileDisplay(p) {
+  const name = p.full_name || currentUser.username;
+  document.getElementById('profile-display-name').textContent = name;
+  document.getElementById('profile-display-college').textContent =
+    [p.college, p.year_class].filter(Boolean).join(' · ') || 'No info yet';
+  document.getElementById('profile-big-avatar').textContent = name[0].toUpperCase();
+
+  const badge = document.getElementById('profile-status-badge');
+  if (currentUser.profile_completed) {
+    badge.className = 'profile-status complete';
+    badge.textContent = '✅ Profile Complete';
+  } else {
+    badge.className = 'profile-status incomplete';
+    badge.textContent = '⚠️ Incomplete';
+  }
+}
+
+// REPLACE WITH:
+async function saveProfile() {
+  const full_name  = document.getElementById('p-name').value.trim();
+  const age        = document.getElementById('p-age').value;
+  const college    = document.getElementById('p-college').value.trim();
+  const year_class = document.getElementById('p-year').value.trim();
+  const address    = document.getElementById('p-address').value.trim();
+  const aadhaarNum = document.getElementById('p-aadhaar-num').value.trim();
+  const collegeIdNum = document.getElementById('p-college-id-num').value.trim();
+  const aadhaarFile  = document.getElementById('p-aadhaar-file').files[0];
+  const collegeIdFile = document.getElementById('p-college-id-file').files[0];
+  const mobileNumber = document.getElementById('p-mobile').value.trim();
+  if (mobileNumber && !/^\d{10}$/.test(mobileNumber)) {
+  toast('Mobile number must be exactly 10 digits','error'); return;
+}
+
+  if (!full_name) { toast('Please enter your full name','error'); return; }
+  if (!college)   { toast('Please enter your college name','error'); return; }
+
+  // Validate Aadhaar format if provided
+  if (aadhaarNum && !/^\d{12}$/.test(aadhaarNum)) {
+    toast('Aadhaar number must be exactly 12 digits','error'); return;
+  }
+
+  // Use FormData to support file uploads
+  const formData = new FormData();
+  formData.append('action', 'saveProfile');
+  formData.append('full_name', full_name);
+  formData.append('age', age);
+  formData.append('college', college);
+  formData.append('year_class', year_class);
+  formData.append('address', address);
+  formData.append('aadhaar_number', aadhaarNum);
+  formData.append('college_id_number', collegeIdNum);
+  formData.append('mobile_number', mobileNumber);
+  if (aadhaarFile)   formData.append('aadhaar_file', aadhaarFile);
+  if (collegeIdFile) formData.append('college_id_file', collegeIdFile);
+
+  const res = await fetch(API, {method:'POST', body: formData})
+    .then(r => r.json())
+    .catch(() => ({success:false, message:'Network error'}));
+  if (res.success) {
+  profileSaved = true;
+  const wasFirst = !currentUser.profile_completed;
+  currentUser.profile_completed = true;
+  const profileData = {
+    full_name:  full_name,
+    college:    college,
+    year_class: year_class,
+  };
+  updateProfileDisplay(profileData);  // ✅ correct object
+
+  buildNav();
+  renderItems('all');
+  if (wasFirst) {
+    toast('Profile saved! Welcome to Rental Hub 🎉', 'success');
+    setTimeout(() => { showSection('sec-home'); loadStudentHome(); }, 400);
+  } else {
+    toast('Profile updated ✓', 'success');
+    loadStudentHome();
+  }
+} else {
+  toast(res.message || 'Error saving profile', 'error');
+}
+}
+
+/* ============================================================
+   ITEMS
+============================================================ */
+function getFilteredItems() {
+  let list = currentFilter === 'all' ? ITEMS : ITEMS.filter(i => i.category === currentFilter);
+  const seen = new Set();
+  list = list.filter(i => { if (seen.has(i.id)) return false; seen.add(i.id); return true; });
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(i =>
+      i.name.toLowerCase().includes(q) ||
+      i.desc.toLowerCase().includes(q) ||
+      i.category.toLowerCase().includes(q)
+    );
+  }
+  return list;
+}
+
+function renderItems(filter) {
+  currentFilter = filter;
+  const grid = document.getElementById('items-grid');
+  if (!grid) return;
+
+  const list = getFilteredItems();
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-muted)">
+      <div style="font-size:44px;margin-bottom:12px">🔍</div><p>No items found.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(item => {
+    const inCart = cart.some(c => c.id === item.id);
+    return `
+    <div class="item-card">
+      <div class="item-img-wrap">
+        <img src="${item.img}" alt="${item.name}" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <div class="item-img-emoji">${item.emoji}</div>
+        <div class="item-cat-tag">${item.category}</div>
+      </div>
+      <div class="item-body">
+        <div class="item-name">${item.name}</div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-footer">
+          <div class="item-price">${fmt(item.price)} <span>/ ${item.unit}</span></div>
+          <button class="add-cart-btn ${inCart?'added':''}" onclick="addToCart(${item.id})">
+            ${inCart?'✓ Added':'+ Cart'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterItems(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderItems(filter);
+}
+
+function searchItems(q) { searchQuery = q; renderItems(currentFilter); }
+
+/* ============================================================
+   CART
+============================================================ */
+function addToCart(itemId) {
+  if (cart.some(c => c.id === itemId)) { toast('Already in cart','info'); return; }
+  const item = ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+  cart.push({...item});
+  toast(`${item.name} added to cart 🛒`,'success');
+  renderItems(currentFilter);
+  updateCartBadge();
+}
+
+function removeFromCart(itemId) {
+  cart = cart.filter(c => c.id !== itemId);
+  renderCart();
+  renderItems(currentFilter);
+  updateCartBadge();
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-content');
+  if (!el) return;
+
+  if (!cart.length) {
+    el.innerHTML = `<div class="cart-empty">
+      <span class="ce-icon">🛒</span>
+      <h3>Your cart is empty</h3>
+      <p>Browse items and add them to your cart.</p>
+      <button class="btn" onclick="navTo('sec-items')">Browse Items →</button>
+    </div>`;
+    return;
+  }
+
+  const total = cart.reduce((s,i) => s + i.price, 0);
+  el.innerHTML = `
+    <div class="cart-list">
+      ${cart.map(item => `
+        <div class="cart-item">
+          <span class="cart-item-emoji">${item.emoji}</span>
+          <div class="cart-item-info">
+            <h4>${item.name}</h4>
+            <p>${item.category} · per ${item.unit}</p>
+          </div>
+          <span class="cart-item-price">${fmt(item.price)}</span>
+          <button class="cart-remove" onclick="removeFromCart(${item.id})" title="Remove">✕</button>
+        </div>`).join('')}
+    </div>
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>Items</span><span>${cart.length} item(s)</span></div>
+      <div class="cart-summary-row"><span>Subtotal</span><span>${fmt(total)}</span></div>
+      <div class="cart-summary-total">
+        <span>Total Due</span>
+        <span class="cart-total-amount">${fmt(total)}</span>
+      </div>
+      <button class="btn btn-full" style="margin-top:16px" onclick="openRentModal()">Proceed to Rent 🚀</button>
+    </div>`;
+}
+
+/* ============================================================
+   RENT MODAL
+============================================================ */
+function openRentModal() {
+  if (!cart.length) { toast('Cart is empty','error'); return; }
+
+  // Pre-fill from profile
+  document.getElementById('rent-name').value    = document.getElementById('p-name').value || '';
+  document.getElementById('rent-address').value = document.getElementById('p-address').value || '';
+
+  // Reset state
+  paymentStep = 1;
+  generatedOTP = '';
+  selectedRating = 0;
+  clearOTPTimer();
+
+  document.getElementById('upi-id').value       = '';
+  document.getElementById('netbank-user').value = '';
+  document.getElementById('netbank-pass').value = '';
+  document.getElementById('netbank-otp').value  = '';
+  document.getElementById('otp-display').textContent = '——';
+  document.getElementById('otp-timer').textContent   = '⏱ 2:00 remaining';
+  const resendBtn = document.getElementById('resend-otp-btn');
+  if (resendBtn) resendBtn.style.display = 'none';
+
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('lit'));
+  const rt = document.getElementById('review-text');
+  if (rt) rt.value = '';
+
+  document.getElementById('rent-step-1').style.display = 'block';
+  document.getElementById('rent-step-2').style.display = 'none';
+
+  // Reset payment method to UPI
+  selectPayMethodByName('UPI');
+
+  document.getElementById('rent-modal').style.display = 'flex';
+}
+
+function closeRentModal() {
+  clearOTPTimer();
+  document.getElementById('rent-modal').style.display = 'none';
+}
+
+function selectPayMethod(el) {
+  document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayMethod = el.dataset.m;
+  applyPayMethodUI();
+}
+
+function selectPayMethodByName(method) {
+  selectedPayMethod = method;
+  document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('selected'));
+  const target = document.querySelector(`.pay-method[data-m="${method}"]`);
+  if (target) target.classList.add('selected');
+  applyPayMethodUI();
+}
+
+function applyPayMethodUI() {
+  document.getElementById('upi-field').style.display     = selectedPayMethod === 'UPI' ? 'block' : 'none';
+  document.getElementById('qr-field').style.display      = selectedPayMethod === 'QR'  ? 'block' : 'none';
+  document.getElementById('netbank-field').style.display = selectedPayMethod === 'NetBanking' ? 'block' : 'none';
+
+  if (selectedPayMethod === 'NetBanking') {
+    document.getElementById('netbank-creds-step').style.display = 'block';
+    document.getElementById('netbank-otp-step').style.display   = 'none';
+    paymentStep = 1;
+  }
+}
+
+/* ============================================================
+   OTP SYSTEM — 2 MINUTE TIMER
+============================================================ */
+function clearOTPTimer() {
+  clearInterval(otpTimerInterval);
+  otpTimerInterval = null;
+}
+
+function startOTPTimer() {
+  clearOTPTimer();
+  let seconds = 120; // 2 minutes
+  const timerEl  = document.getElementById('otp-timer');
+  const resendBtn = document.getElementById('resend-otp-btn');
+  if (resendBtn) resendBtn.style.display = 'none';
+
+  otpTimerInterval = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (timerEl) timerEl.textContent = `⏱ ${m}:${s.toString().padStart(2,'0')} remaining`;
+
+    if (seconds <= 0) {
+      clearOTPTimer();
+      generatedOTP = ''; // invalidate
+      if (timerEl) timerEl.textContent = '❌ OTP expired';
+      if (resendBtn) resendBtn.style.display = 'inline-block';
+    }
+  }, 1000);
+}
+
+function resendOTP() {
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  document.getElementById('otp-display').textContent = generatedOTP;
+  document.getElementById('netbank-otp').value = '';
+  startOTPTimer();
+  toast('New OTP generated ✓','success');
+}
+
+/* ============================================================
+   PAYMENT PROCESSING
+============================================================ */
+async function processPayment() {
+  const name    = document.getElementById('rent-name').value.trim();
+  const address = document.getElementById('rent-address').value.trim();
+
+  if (!name || !address) { toast('Please fill name and address','error'); return; }
+
+  // UPI validation
+  if (selectedPayMethod === 'UPI') {
+    const upi = document.getElementById('upi-id').value.trim();
+    if (!upi) { toast('Enter UPI ID','error'); return; }
+    if (!upi.includes('@')) { toast('Enter a valid UPI ID (e.g. name@upi)','error'); return; }
+  }
+
+  // Net Banking Step 1 → Generate OTP
+  if (selectedPayMethod === 'NetBanking' && paymentStep === 1) {
+    const user = document.getElementById('netbank-user').value.trim();
+    const pass = document.getElementById('netbank-pass').value.trim();
+    const bank = document.getElementById('bank-name').value;
+    if (!bank) { toast('Please select your bank','error'); return; }
+    if (!user || !pass) { toast('Enter internet banking credentials','error'); return; }
+
+    generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    document.getElementById('otp-display').textContent = generatedOTP;
+    document.getElementById('netbank-creds-step').style.display = 'none';
+    document.getElementById('netbank-otp-step').style.display   = 'block';
+    startOTPTimer();
+    toast('OTP sent to your registered mobile number ✓','info');
+    paymentStep = 2;
+    return;
+  }
+
+  // Net Banking Step 2 → Verify OTP
+  if (selectedPayMethod === 'NetBanking' && paymentStep === 2) {
+    const otp = document.getElementById('netbank-otp').value.trim();
+    if (!generatedOTP) { toast('OTP expired. Please resend OTP','error'); return; }
+    if (otp !== generatedOTP) { toast('Invalid OTP. Please try again','error'); return; }
+    clearOTPTimer();
+  }
+
+  // Process payment
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true; btn.textContent = 'Processing…';
+
+  const total = cart.reduce((s,i) => s + i.price, 0);
+  const payload = {
+    name, address,
+    payment_mode: selectedPayMethod,
+    upi_id: document.getElementById('upi-id').value,
+    items: cart.map(i => ({item_id:i.id, item_name:i.name, price:i.price, unit:i.unit})),
+    total_amount: total
+  };
+
+  const res = await api('processRental', payload);
+
+  if (res.success) {
+    lastRentalId = res.rental_id;
+    document.getElementById('payment-summary').innerHTML = `
+      <div class="receipt-row"><span class="receipt-label">Transaction ID</span><span class="receipt-value">${res.transaction_id}</span></div>
+      <div class="receipt-row"><span class="receipt-label">Items</span><span class="receipt-value" style="font-size:11px;font-family:'DM Sans',sans-serif">${cart.map(i=>i.name).join(', ')}</span></div>
+      <div class="receipt-row"><span class="receipt-label">Amount</span><span class="receipt-value">${fmt(total)}</span></div>
+      <div class="receipt-row"><span class="receipt-label">Mode</span><span class="receipt-value">${selectedPayMethod}</span></div>
+      <div class="receipt-row"><span class="receipt-label">Delivery Date</span><span class="receipt-value">${res.delivery_date || 'Next day'}</span></div>
+      <div class="receipt-row"><span class="receipt-label">Due Date</span><span class="receipt-value">${res.due_date || '7 days from today'}</span></div>
+    `;
+    document.getElementById('rent-step-1').style.display = 'none';
+    document.getElementById('rent-step-2').style.display = 'block';
+    cart = [];
+    renderCart();
+    renderItems(currentFilter);
+    updateCartBadge();
+  } else {
+    toast(res.message || 'Payment failed. Try again.','error');
+  }
+
+  btn.disabled = false; btn.textContent = 'Pay Now 💳';
+}
+
+/* ============================================================
+   RATING
+============================================================ */
+function setStar(val) {
+  selectedRating = val;
+  document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('lit', i < val));
+}
+
+async function submitRating() {
+  if (!selectedRating) { toast('Please select a rating','error'); return; }
+  const review = document.getElementById('review-text').value.trim();
+  const res = await api('submitRating', {rental_id:lastRentalId, rating:selectedRating, review});
+  if (res.success) toast('Rating submitted! Thanks ⭐','success');
+  else toast(res.message || 'Could not submit rating','error');
+  closeRentModal();
+}
+
+/* ============================================================
+   MY RENTALS
+============================================================ */
+async function loadMyRentals() {
+  const el = document.getElementById('my-rentals-content');
+  el.innerHTML = '<div class="loading-block"><div class="spinner"></div></div>';
+  const res = await api('myRentals');
+  if (!res.success || !res.rentals.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center">No rentals yet. Browse items and start renting!</p>';
+    return;
+  }
+  // REPLACE WITH:
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Item(s)</th><th>Amount</th><th>Mode</th><th>Rent Date</th><th>Delivery Date</th><th>Due Date</th><th>Status</th></tr></thead>
+    <tbody>${res.rentals.map(r => `<tr>
+      <td><strong>${r.items}</strong></td>
+      <td>${fmt(r.total_amount)}</td>
+      <td><span class="badge blue">${r.payment_mode}</span></td>
+      <td>${r.rent_date}</td>
+      <td><span class="badge blue">${r.delivery_date || '—'}</span></td>
+      <td>${r.due_date}</td>
+      <td><span class="badge green">Active</span></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ============================================================
+   ADMIN DASHBOARD
+============================================================ */
+async function loadAdminDash() {
+  const res = await api('adminStats');
+  if (res.success) {
+    document.getElementById('a-students').textContent = res.students;
+    document.getElementById('a-rentals').textContent  = res.rentals;
+    document.getElementById('a-revenue').textContent  = fmt(res.revenue);
+    document.getElementById('a-ratings').textContent  = res.ratings;
+  }
+
+  // Load preview widgets
+  const aRes = await api('activityLog');
+  const actEl = document.getElementById('dash-activity-preview');
+  if (aRes.success && aRes.logs.length) {
+    actEl.innerHTML = aRes.logs.slice(0,5).map(l => `
+      <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="font-weight:700;color:var(--text)">${l.username}</span>
+        <span class="badge blue" style="margin:0 6px">${l.action}</span>
+        <span style="color:var(--text-muted)">${l.details||''}</span>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;font-family:'DM Mono',monospace">${l.created_at}</div>
+      </div>`).join('');
+  } else {
+    actEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:12px 0">No activity yet.</p>';
+  }
+
+  const tRes = await api('rentTracking');
+  const dueEl = document.getElementById('dash-due-preview');
+  if (tRes.success && tRes.rentals.length) {
+    const dueSoon = tRes.rentals.filter(r => r.days_until_due !== null && r.days_until_due <= 3 && r.days_until_due >= 0);
+    if (dueSoon.length) {
+      dueEl.innerHTML = dueSoon.map(r => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px">
+          <span style="font-weight:700;color:var(--text)">${r.student_name}</span>
+          — <span style="color:var(--text-muted)">${r.items}</span>
+          <span class="badge orange" style="margin-left:6px">Due in ${r.days_until_due}d</span>
+        </div>`).join('');
+    } else {
+      dueEl.innerHTML = '<p style="color:var(--success);font-size:13px;padding:12px 0">✅ No items due soon.</p>';
+    }
+  } else {
+    dueEl.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:12px 0">No active rentals.</p>';
+  }
+}
+
+/* ============================================================
+   ACTIVITY LOG
+============================================================ */
+async function loadActivity() {
+  const el = document.getElementById('activity-content');
+  el.innerHTML = '<div class="loading-block"><div class="spinner"></div></div>';
+  const res = await api('activityLog');
+  if (!res.success || !res.logs.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);padding:20px">No activity recorded yet.</p>';
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Student Name</th><th>Action</th><th>Details</th><th>Timestamp</th></tr></thead>
+    <tbody>${res.logs.map(l => `<tr>
+      <td><strong>${l.username}</strong></td>
+      <td><span class="badge blue">${l.action}</span></td>
+      <td style="max-width:260px;color:var(--text-muted);font-size:12px">${l.details||'—'}</td>
+      <td style="color:var(--text-muted);font-size:11px;font-family:'DM Mono',monospace;white-space:nowrap">${l.created_at}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ============================================================
+   RENT TRACKING
+============================================================ */
+async function loadTracking() {
+  const remEl = document.getElementById('tracking-reminders');
+  const el    = document.getElementById('tracking-content');
+  el.innerHTML = '<div class="loading-block"><div class="spinner"></div></div>';
+
+  const res = await api('rentTracking');
+  if (!res.success || !res.rentals.length) {
+    remEl.innerHTML = '';
+    el.innerHTML = '<p style="color:var(--text-muted);padding:20px">No rentals to track.</p>';
+    return;
+  }
+
+  const dueSoon = res.rentals.filter(r => r.days_until_due !== null && r.days_until_due <= 2 && r.days_until_due >= 0);
+  const overdue = res.rentals.filter(r => r.days_until_due !== null && r.days_until_due < 0);
+
+  remEl.innerHTML = [
+    ...overdue.map(r => `<div class="alert-banner" style="border-color:rgba(240,77,77,.3);background:rgba(240,77,77,.07)">
+      <span>🚨</span>
+      <p>OVERDUE: <strong>${r.student_name}</strong> — "${r.items}" was due ${Math.abs(r.days_until_due)} day(s) ago!</p>
+    </div>`),
+    ...dueSoon.map(r => `<div class="alert-banner">
+      <span>⚠️</span>
+      <p>Reminder: <strong>${r.student_name}</strong> — "${r.items}" due in <strong>${r.days_until_due} day(s)</strong>.</p>
+    </div>`)
+  ].join('');
+
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Student Name</th><th>Item(s)</th><th>Amount</th><th>Rent Date</th><th>Due Date</th><th>Days Left</th><th>Status</th></tr></thead>
+    <tbody>${res.rentals.map(r => {
+      const isOverdue = r.days_until_due !== null && r.days_until_due < 0;
+      const isSoon    = r.days_until_due !== null && r.days_until_due <= 2 && r.days_until_due >= 0;
+      return `<tr>
+        <td><strong>${r.student_name}</strong></td>
+        <td style="max-width:180px">${r.items}</td>
+        <td>${fmt(r.total_amount)}</td>
+        <td style="font-size:12px">${r.rent_date}</td>
+        <td style="font-size:12px">${r.due_date}</td>
+        <td>${r.days_until_due !== null ? (isOverdue ? `<span style="color:var(--danger);font-weight:700">${r.days_until_due}d</span>` : `${r.days_until_due}d`) : '—'}</td>
+        <td><span class="badge ${isOverdue?'red':isSoon?'orange':'green'}">${isOverdue?'Overdue':isSoon?'Due Soon':'Active'}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+/* ============================================================
+   ADMIN RATINGS
+============================================================ */
+async function loadAdminRatings() {
+  const el = document.getElementById('ratings-content');
+  el.innerHTML = '<div class="loading-block"><div class="spinner"></div></div>';
+  const res = await api('allRatings');
+  if (!res.success || !res.ratings.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);padding:20px">No ratings yet.</p>';
+    return;
+  }
+
+  const avg = (res.ratings.reduce((s,r) => s + Number(r.rating), 0) / res.ratings.length).toFixed(1);
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;padding:14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border)">
+      <div style="font-size:36px;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${avg}</div>
+      <div>
+        <div style="font-size:20px">${'⭐'.repeat(Math.round(avg))}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${res.ratings.length} reviews total</div>
+      </div>
+    </div>
+    <div class="table-wrap"><table class="data-table">
+      <thead><tr><th>Student</th><th>Rating</th><th>Review</th><th>Date</th></tr></thead>
+      <tbody>${res.ratings.map(r => `<tr>
+        <td>
+          <strong>${r.display_name}</strong>
+          <div style="font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace">@${r.username}</div>
+        </td>
+        <td>${'⭐'.repeat(r.rating)}</td>
+        <td style="color:var(--text-muted);font-size:12px;max-width:240px">${r.review||'—'}</td>
+        <td style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;white-space:nowrap">${r.created_at}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+/* ============================================================
+   STUDENT DOCUMENTS
+============================================================ */
+async function loadStudentDocs() {
+  const el = document.getElementById('docs-content');
+  el.innerHTML = '<div class="loading-block"><div class="spinner"></div></div>';
+
+  const res = await api('studentDocuments');
+
+  if (!res.success || !res.students.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);padding:20px">No student documents found.</p>';
+    return;
+  }
+
+  const rows = res.students.map(s => {
+    const aadhaarBtn = s.aadhaar_file
+      ? `<a href="${s.aadhaar_file}" target="_blank">
+           <button class="btn btn-sm btn-outline" style="font-size:11px">
+             🪪 View Aadhaar
+           </button>
+         </a>`
+      : `<span style="color:var(--text-muted);font-size:12px">Not uploaded</span>`;
+
+    const collegeBtn = s.college_id_file
+      ? `<a href="${s.college_id_file}" target="_blank">
+           <button class="btn btn-sm btn-outline" style="font-size:11px;border-color:var(--accent2);color:var(--accent2)">
+             🎓 View College ID
+           </button>
+         </a>`
+      : `<span style="color:var(--text-muted);font-size:12px">Not uploaded</span>`;
+
+    const aadhaarNum = s.aadhaar_number
+      ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2)">${s.aadhaar_number}</span>`
+      : `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+
+    const collegeIdNum = s.college_id_number
+      ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2)">${s.college_id_number}</span>`
+      : `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+
+   return `<tr>
+      <td>
+        <strong>${s.full_name}</strong>
+        <div style="font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-top:2px">@${s.username}</div>
+      </td>
+      <td>
+        ${s.mobile_number 
+          ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--success)">📱 ${s.mobile_number}</span>`
+          : `<span style="color:var(--text-muted);font-size:12px">—</span>`}
+      </td>
+      <td>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Number: ${aadhaarNum}</div>
+        ${aadhaarBtn}
+      </td>
+      <td>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">ID: ${collegeIdNum}</div>
+        ${collegeBtn}
+      </td>
+      <td>
+        <div style="font-size:12px">${s.college || '—'}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${s.year_class || '—'}</div>
+      </td>
+      <td>
+        ${s.aadhaar_file && s.college_id_file
+          ? '<span class="badge green">✅ Complete</span>'
+          : s.aadhaar_file || s.college_id_file
+          ? '<span class="badge orange">⚠️ Partial</span>'
+          : '<span class="badge red">❌ Missing</span>'}
+      </td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="badge green">✅ Complete — both docs uploaded</span>
+      <span class="badge orange">⚠️ Partial — one doc missing</span>
+      <span class="badge red">❌ Missing — no docs uploaded</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Mobile</th>
+            <th>Aadhaar Card</th>
+            <th>College ID</th>
+            <th>College / Year</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+</script>
+</body>
+</html>
+
+
+
+
+
